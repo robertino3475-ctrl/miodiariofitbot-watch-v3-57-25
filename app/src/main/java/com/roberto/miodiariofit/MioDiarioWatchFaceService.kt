@@ -1,59 +1,36 @@
-
 package com.roberto.miodiariofit
-import android.graphics.*
-import android.os.*
-import android.support.wearable.watchface.CanvasWatchFaceService
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
 import android.view.SurfaceHolder
-import org.json.JSONObject
-import java.net.URL
-import kotlin.concurrent.thread
+import androidx.wear.watchface.CanvasType
+import androidx.wear.watchface.ComplicationSlotsManager
+import androidx.wear.watchface.WatchFace
+import androidx.wear.watchface.WatchFaceService
+import androidx.wear.watchface.WatchFaceType
+import androidx.wear.watchface.WatchState
+import androidx.wear.watchface.style.CurrentUserStyleRepository
+import java.time.ZonedDateTime
 
-class MioDiarioWatchFaceService : CanvasWatchFaceService() {
-    override fun onCreateEngine(): Engine = Engine()
-    inner class Engine : CanvasWatchFaceService.Engine() {
-        private var glico = "--"
-        private var kcalRes = "--"
-        private val handler = Handler(Looper.getMainLooper())
-        private val updateRunnable = object : Runnable {
-            override fun run() {
-                fetchData()
-                handler.postDelayed(this, 900000)
+class MioDiarioWatchFaceService : WatchFaceService() {
+    override suspend fun createWatchFace(
+        surfaceHolder: SurfaceHolder, watchState: WatchState,
+        complicationSlotsManager: ComplicationSlotsManager,
+        currentUserStyleRepository: CurrentUserStyleRepository
+    ): WatchFace {
+        val renderer = object : Renderer.CanvasRenderer2<MioDiarioWatchFaceService>(
+            surfaceHolder, currentUserStyleRepository, watchState, CanvasType.HARDWARE, 16
+        ) {
+            private val paint = Paint().apply { color = Color.WHITE; textSize = 42f; isAntiAlias = true }
+            private val small = Paint().apply { color = Color.GREEN; textSize = 28f; isAntiAlias = true }
+            override fun render(canvas: Canvas, bounds: Rect, zonedDateTime: ZonedDateTime) {
+                canvas.drawColor(Color.BLACK)
+                canvas.drawText("MioDiario v3.57.25", 20f, 90f, small)
+                canvas.drawText(zonedDateTime.toLocalTime().toString().substring(0,8), 20f, 150f, paint)
             }
+            override fun renderHighlightLayer(canvas: Canvas, bounds: Rect, zonedDateTime: ZonedDateTime) {}
         }
-        override fun onCreate(holder: SurfaceHolder) {
-            super.onCreate(holder)
-            setWatchFaceStyle(android.support.wearable.watchface.WatchFaceStyle.Builder(this@MioDiarioWatchFaceService).setAcceptsTapEvents(true).build())
-            handler.post(updateRunnable)
-        }
-        override fun onDestroy() { handler.removeCallbacks(updateRunnable); super.onDestroy() }
-        private fun fetchData() {
-            thread {
-                try {
-                    val urlStr = "https://script.google.com/macros/s/AKfycbzs9d0Y3MaauYGogn3Ij9h5LDfyThUPiVq3bXzRAM41mFOu-avD13ppT1SygOtU3Q5k/exec?action=watch"
-                    val json = URL(urlStr).readText()
-                    val obj = JSONObject(json)
-                    glico = obj.optString("glicemia","--")
-                    if (glico == "--") glico = obj.optString("glicemia_val","--")
-                    kcalRes = obj.optString("kcalResidue","--")
-                    if (kcalRes == "--") kcalRes = obj.optString("kcal_residuo","--")
-                    invalidate()
-                } catch (e: Exception) {}
-            }
-        }
-        override fun onDraw(canvas: Canvas, bounds: Rect) {
-            canvas.drawColor(Color.BLACK)
-            val paint = Paint().apply { color = Color.WHITE; textSize = 26f; isAntiAlias = true; textAlign = Paint.Align.CENTER }
-            val paint2 = Paint().apply { color = Color.GREEN; textSize = 44f; isAntiAlias = true; textAlign = Paint.Align.CENTER; isFakeBoldText = true }
-            val paintKcal = Paint().apply { color = Color.CYAN; textSize = 22f; isAntiAlias = true; textAlign = Paint.Align.CENTER }
-            val centerX = bounds.centerX().toFloat()
-            val centerY = bounds.centerY().toFloat()
-            canvas.drawText("MioDiarioFitBot", centerX, centerY-65, paint)
-            canvas.drawText(glico + " mg/dL", centerX, centerY+5, paint2)
-            canvas.drawText("Kcal res: " + kcalRes, centerX, centerY+40, paintKcal)
-            canvas.drawText("v3.57.25 LIVE", centerX, centerY+70, paint)
-        }
-        override fun onTapCommand(tapType: Int, x: Int, y: Int, eventTime: Long) {
-            if (tapType == TAP_TYPE_TAP) { fetchData() }
-        }
+        return WatchFace(WatchFaceType.DIGITAL, renderer)
     }
 }
