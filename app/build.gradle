@@ -2,11 +2,9 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
-
 android {
     namespace 'com.miodiariofitbot.watch'
     compileSdk 34
-
     defaultConfig {
         applicationId "com.miodiariofitbot.watch"
         minSdk 26
@@ -14,7 +12,6 @@ android {
         versionCode 5725
         versionName "3.57.25"
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -25,7 +22,6 @@ android {
             debuggable true
         }
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -34,7 +30,6 @@ android {
         jvmTarget = '1.8'
     }
 }
-
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
