@@ -12,15 +12,18 @@ jobs:
           distribution: 'temurin'
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-      - name: Make gradlew executable
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
+      - name: Install platforms
         run: |
-          chmod +x gradlew || true
-          ls -la
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
       - name: Build APK
-        run: |
-          ./gradlew assembleDebug || gradle assembleDebug
+        run: gradle assembleDebug --stacktrace
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MioDiarioFitBot-Watch-v3.57.25-FINALE
+          name: MioDiarioFitBot-Watch-v3.57.25-FINALE-VERDE
           path: "**/build/outputs/apk/debug/*.apk"
