@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.hardware.type.watch" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:label="MioDiarioFitBot Watch">
+        <service android:name=".MioDiarioWatchFaceService"
+            android:label="MioDiarioFitBot v3.57.25"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+                <category android:name="com.google.android.wearable.watchFaces.category.WATCH_FACE" />
+            </intent-filter>
+            <meta-data android:name="com.google.android.wearable.watchFace.preview" android:resource="@android:drawable/sym_def_app_icon" />
+        </service>
+    </application>
+</manifest>
